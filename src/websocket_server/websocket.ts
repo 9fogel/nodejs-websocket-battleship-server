@@ -1,5 +1,7 @@
 import { IncomingMessage } from 'http';
 import WebSocket, { WebSocketServer } from 'ws';
+import { router } from '../router/router.js';
+import { parseCommand } from '../utils/commandsHandler.js';
 
 const WS_PORT = 3000;
 
@@ -12,8 +14,9 @@ export function onConnect(ws: WebSocket.Server<typeof WebSocket, typeof Incoming
 
   console.log(`WebSocket server works on ${WS_PORT}`);
 
-  ws.on('message', function message(data) {
-    console.log('Data received: ', JSON.parse(data.toString()));
+  ws.on('message', function message(command) {
+    const parsedCommand = parseCommand(command);A
+    router(parsedCommand);
   });
 }
 
