@@ -9,14 +9,14 @@ export const wsServer: WebSocket.Server<typeof WebSocket, typeof IncomingMessage
   port: WS_PORT,
 });
 
-export function onConnect(ws: WebSocket.Server<typeof WebSocket, typeof IncomingMessage>): void {
+export function onConnect(ws: WebSocket): void {
   ws.on('error', console.error);
 
   console.log(`WebSocket server works on ${WS_PORT}`);
 
   ws.on('message', function message(command) {
-    const parsedCommand = parseCommand(command);A
-    router(parsedCommand);
+    const parsedCommand = parseCommand(command);
+    router(ws, parsedCommand);
   });
 }
 

@@ -1,11 +1,15 @@
+import WebSocket from 'ws';
 import { ICommand } from '../types/types.js';
-export const router = (data: ICommand) => {
+import RegController from '../controller/regController.js';
+
+export const router = (ws: WebSocket, data: ICommand) => {
   console.log('Data in router', data);
   const commandType = data.type;
 
   switch (commandType) {
     case 'reg':
       console.log('send reg response');
+      new RegController().sendRegResponse(ws, data);
       break;
     case 'update_winners':
       console.log('update winners');

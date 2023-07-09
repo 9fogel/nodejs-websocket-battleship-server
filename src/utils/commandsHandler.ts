@@ -1,6 +1,7 @@
+import { RawData } from 'ws';
 import { ICommand } from '../types/types.js';
 
-export const parseCommand = (command: ICommand) => {
+export const parseCommand = (command: RawData): ICommand => {
   let parsedCommand = JSON.parse(command.toString());
   const parsedData = JSON.parse(parsedCommand.data);
   parsedCommand = {
@@ -10,4 +11,15 @@ export const parseCommand = (command: ICommand) => {
   };
 
   return parsedCommand;
+};
+
+export const stringifyResponse = (response: ICommand) => {
+  const strData = JSON.stringify(response.data);
+  const strResponse = JSON.stringify({
+    type: response.type,
+    data: strData,
+    id: response.id,
+  });
+
+  return strResponse;
 };

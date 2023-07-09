@@ -4,7 +4,8 @@ export interface ICommand {
   id: number;
 }
 
-interface IRegUser {
+export interface IRegUser {
+  id?: string;
   name: string;
   password: string;
   error?: boolean;
