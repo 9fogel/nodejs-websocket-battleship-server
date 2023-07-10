@@ -15,6 +15,7 @@ export function onConnect(ws: WebSocket): void {
   console.log(`WebSocket server works on ${WS_PORT}`);
 
   ws.on('message', function message(command) {
+    console.log('ws on', command.toString());
     const parsedCommand = parseCommand(command);
     router(ws, parsedCommand);
   });

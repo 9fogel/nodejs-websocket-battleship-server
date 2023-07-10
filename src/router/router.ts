@@ -1,15 +1,18 @@
 import WebSocket from 'ws';
-import { ICommand } from '../types/types.js';
+import { ICommand, IRegUser } from '../types/types.js';
 import RegController from '../controller/regController.js';
+import RoomController from '../controller/roomController.js';
 
-export const router = (ws: WebSocket, data: ICommand) => {
+export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
   console.log('Data in router', data);
   const commandType = data.type;
 
   switch (commandType) {
     case 'reg':
-      console.log('send reg response');
-      new RegController().sendRegResponse(ws, data);
+      new RegController().sendRegResponse(ws, data as ICommand<IRegUser>);
+      new RoomController().sendUpdateRoomState(ws);
+      // console.log('SEND update room state - send rooms list, where only one player inside');
+      console.log('SEND update winners'); //TODO
       break;
     case 'update_winners':
       console.log('update winners');
