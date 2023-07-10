@@ -13,7 +13,6 @@ export interface ICommand<T> {
 }
 
 export interface IRegUser {
-  // id?: string;
   ws?: WebSocket;
   name: string;
   password: string;
@@ -31,20 +30,6 @@ type TRoomUser = {
   index: number;
 };
 
-// {
-//   type: "update_room",
-//   data:
-//       [
-//           {
-//               roomId: <number>,
-//               roomUsers:
-//                   [
-//                       {
-//                           name: <string>,
-//                           index: <number>,
-//                       }
-//                   ],
-//           },
-//       ],
-//   id: 0,
-// }
+export type TAddToRoom = {
+  indexRoom: number;
+};

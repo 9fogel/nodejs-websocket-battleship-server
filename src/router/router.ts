@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { ICommand, IRegUser } from '../types/types.js';
+import { ICommand, IRegUser, TAddToRoom } from '../types/types.js';
 import RegController from '../controller/regController.js';
 import RoomController from '../controller/roomController.js';
 
@@ -21,6 +21,7 @@ export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
       new RoomController().createNewRoom(ws);
       break;
     case 'add_user_to_room':
+      new RoomController().addToRoom(ws, data as ICommand<TAddToRoom>);
       console.log('add user to room');
       break;
     case 'create_game':
