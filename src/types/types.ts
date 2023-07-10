@@ -13,7 +13,7 @@ export interface ICommand<T> {
 }
 
 export interface IRegUser {
-  id?: string;
+  // id?: string;
   ws?: WebSocket;
   name: string;
   password: string;

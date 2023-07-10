@@ -10,7 +10,7 @@ export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
   switch (commandType) {
     case 'reg':
       new RegController().sendRegResponse(ws, data as ICommand<IRegUser>);
-      new RoomController().sendUpdateRoomState(ws);
+      new RoomController().sendUpdateRoomState(ws); //TODO: send updates to all or only reg-user??
       // console.log('SEND update room state - send rooms list, where only one player inside');
       console.log('SEND update winners'); //TODO
       break;
@@ -18,7 +18,7 @@ export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
       console.log('update winners');
       break;
     case 'create_room':
-      console.log('create room');
+      new RoomController().createNewRoom(ws);
       break;
     case 'add_user_to_room':
       console.log('add user to room');

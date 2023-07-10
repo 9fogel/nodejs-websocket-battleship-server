@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import { ICommand, IRegUser } from '../types/types.js';
 import { stringifyResponse } from '../utils/commandsHandler.js';
 import { isNewUser, isPasswordValid } from '../utils/validators.js';
-import { userList } from '../data/users-data.js';
+import { userList, websocketsList } from '../data/users-data.js';
 
 class RegController {
   sendRegResponse(ws: WebSocket, command: ICommand<IRegUser>): void {
@@ -14,8 +14,11 @@ class RegController {
   private addUser(ws: WebSocket, userData: IRegUser): void {
     if (isNewUser(userData.name)) {
       userList.push({ ...userData, ws });
+      websocketsList.add(ws);
+      // websocketsList.push(ws); //TODO: do we need this?
       console.log(`user ${userData.name} added to DB`);
-      console.log(userList);
+      // console.log(userList);
+      // console.log(websocketsList);
     }
   }
 
