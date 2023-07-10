@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 import { ICommand, IRegUser } from '../types/types.js';
 import { stringifyResponse } from '../utils/commandsHandler.js';
-import { isUserNameValid } from '../utils/validators.js';
+import { isNewUser, isPasswordValid } from '../utils/validators.js';
 import { userList } from '../data/users-data.js';
 
 class RegController {
@@ -12,7 +12,7 @@ class RegController {
   }
 
   private addUser(ws: WebSocket, userData: IRegUser): void {
-    if (isUserNameValid(userData.name)) {
+    if (isNewUser(userData.name)) {
       userList.push({ ...userData, ws });
       console.log(`user ${userData.name} added to DB`);
       console.log(userList);
@@ -24,8 +24,12 @@ class RegController {
       type: command.type,
       data: {
         ...command.data,
-        error: isUserNameValid(command.data.name) ? false : true,
-        errorText: isUserNameValid(command.data.name) ? '' : 'User with such a name already exists',
+        error: isNewUser(command.data.name) ? false : isPasswordValid(command.data) ? false : true,
+        errorText: isNewUser(command.data.name)
+          ? ''
+          : isPasswordValid(command.data)
+          ? ''
+          : "Password for this username doesn't match",
       },
       id: command.id,
     };
