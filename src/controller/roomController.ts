@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { playRooms } from '../data/rooms-data.js';
+import { gamesList, playRooms } from '../data/rooms-data.js';
 import { stringifyResponse } from '../utils/commandsHandler.js';
 import { userList, websocketsList } from '../data/users-data.js';
 import { ICommand, TAddToRoom } from '../types/types.js';
@@ -16,14 +16,15 @@ class RoomController {
 
       playRooms[indexRoom - 1].roomUsers.push(secondPlayer);
 
-      playRooms[indexRoom - 1].roomUsers.forEach((player) => {
+      playRooms[indexRoom - 1].roomUsers.forEach((player, index) => {
         const playerWs = userList[player.index - 1].ws;
         if (playerWs) {
-          this.sendCreateGameResponse(playerWs);
+          this.sendCreateGameResponse(playerWs, index);
         }
       });
 
-      playRooms.splice(indexRoom, 1);
+      const game = playRooms.splice(indexRoom, 1);
+      gamesList.push(game[0]);
 
       websocketsList.forEach((wsClient) => {
         this.sendUpdateRoomState(wsClient);
@@ -53,8 +54,8 @@ class RoomController {
     }
   }
 
-  sendCreateGameResponse(ws: WebSocket) {
-    const createGameResponse = this.createGameResponse();
+  sendCreateGameResponse(ws: WebSocket, index: number) {
+    const createGameResponse = this.createGameResponse(index);
     ws.send(createGameResponse);
   }
 
@@ -63,12 +64,12 @@ class RoomController {
     ws.send(updateRoomResponse);
   }
 
-  private createGameResponse(): string {
+  private createGameResponse(index: number): string {
     const gameResponse = {
       type: 'create_game',
       data: {
-        // idGame: <number>,
-        // idPlayer: <number>, \* player id in the game *\
+        idGame: gamesList.length,
+        idPlayer: index,
       },
       id: 0,
     };
