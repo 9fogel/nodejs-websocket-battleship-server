@@ -22,16 +22,8 @@ export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
       break;
     case 'add_user_to_room':
       new RoomController().addToRoom(ws, data as ICommand<TAddToRoom>);
-      console.log('add user to room');
       break;
-    // case 'create_game':
-    //   console.log('create game - send for both players in the room');
-    //   break;
-    // case 'update_room':
-    //   console.log('update room state - send rooms list, where only one player inside');
-    //   break;
     case 'add_ships':
-      // console.log('add ships');
       new ShipsController().addShipsToGameBoard(ws, data as ICommand<IAddShips>);
       break;
     case 'start_game':

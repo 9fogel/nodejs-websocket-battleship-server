@@ -2,10 +2,10 @@ import WebSocket from 'ws';
 import { gamesList, playRooms } from '../data/rooms-data.js';
 import { stringifyResponse } from '../utils/commandsHandler.js';
 import { userList, websocketsList } from '../data/users-data.js';
-import { ICommand, IGame, TAddToRoom } from '../types/types.js';
+import { ICommand, IGame, IRegUser, TAddToRoom } from '../types/types.js';
 
 class RoomController {
-  addToRoom(ws: WebSocket, command: ICommand<TAddToRoom>) {
+  addToRoom(ws: WebSocket, command: ICommand<TAddToRoom>): void {
     const { indexRoom } = command.data;
     const isCreator = this.isRoomCreator(ws, indexRoom);
 
@@ -41,7 +41,7 @@ class RoomController {
 
   createNewRoom(ws: WebSocket): void {
     const user = userList.find((user) => user.ws === ws);
-    if (user) {
+    if (user && this.isFirstUserRoom(user)) {
       const firstPlayer = {
         ws: user.ws,
         name: user?.name,
@@ -55,12 +55,6 @@ class RoomController {
       console.log(playRooms[playRooms.length - 1]);
 
       this.sendUpdateRoomStateToAll();
-
-      // websocketsList.forEach((wsClient) => {
-      //   if (wsClient !== ws) {
-      //     this.sendUpdateRoomState(wsClient);
-      //   }
-      // });
     }
   }
 
@@ -68,14 +62,6 @@ class RoomController {
     websocketsList.forEach((wsClient) => {
       this.sendUpdateRoomState(wsClient);
     });
-  }
-
-  private isRoomCreator(ws: WebSocket, indexRoom: number): boolean {
-    const currentRoom = playRooms[indexRoom - 1];
-    const roomCreator = currentRoom.roomUsers.find((user) => user.ws === ws);
-    console.log('roomCreator', roomCreator);
-
-    return roomCreator ? true : false;
   }
 
   private createGameResponse(index: number): string {
@@ -92,7 +78,19 @@ class RoomController {
   }
 
   private createRoomResponse(): string {
-    const singleRooms = playRooms.filter((room) => room.roomUsers.length === 1);
+    const singleRooms = playRooms
+      .filter((room) => room.roomUsers.length === 1)
+      .map((room) => {
+        return {
+          roomId: room.roomId,
+          roomUsers: [
+            {
+              name: room.roomUsers[0].name,
+              index: room.roomUsers[0].index,
+            },
+          ],
+        };
+      });
     const roomResponse = {
       type: 'update_room',
       data: singleRooms,
@@ -100,6 +98,24 @@ class RoomController {
     };
 
     return stringifyResponse(roomResponse);
+  }
+
+  private isFirstUserRoom(user: IRegUser): boolean {
+    const foundRoomWithUser = playRooms.find((room) => {
+      return room.roomUsers.some((roomUser) => roomUser.name === user.name);
+    });
+    return foundRoomWithUser ? false : true;
+  }
+
+  private isRoomCreator(ws: WebSocket, indexRoom: number): boolean {
+    const currentRoom = playRooms[indexRoom - 1];
+    console.log(currentRoom);
+    if (currentRoom) {
+      const roomCreator = currentRoom.roomUsers?.find((user) => user.ws === ws);
+      return roomCreator ? true : false;
+    } else {
+      return false;
+    }
   }
 
   private sendCreateGameResponse(ws: WebSocket, index: number): void {

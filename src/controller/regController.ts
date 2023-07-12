@@ -46,6 +46,7 @@ class RegController {
       if (userPreviousWs) {
         websocketsList.delete(userPreviousWs);
         websocketsList.add(ws);
+        //TODO: also update ws in user active games if any
       }
       user.ws = ws;
     }
