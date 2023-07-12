@@ -1,7 +1,8 @@
 import WebSocket from 'ws';
-import { ICommand, IRegUser, TAddToRoom } from '../types/types.js';
+import { IAddShips, ICommand, IRegUser, TAddToRoom } from '../types/types.js';
 import RegController from '../controller/regController.js';
 import RoomController from '../controller/roomController.js';
+import ShipsController from '../controller/shipsController.js';
 
 export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
   console.log('Data in router', data);
@@ -32,6 +33,7 @@ export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
     //   break;
     case 'add_ships':
       console.log('add ships');
+      new ShipsController().addShipsToGameBoard(ws, data as ICommand<IAddShips>);
       break;
     case 'start_game':
       console.log("start game -only after server receives both player's ships positions");
