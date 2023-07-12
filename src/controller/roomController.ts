@@ -2,7 +2,7 @@ import WebSocket from 'ws';
 import { gamesList, playRooms } from '../data/rooms-data.js';
 import { stringifyResponse } from '../utils/commandsHandler.js';
 import { userList, websocketsList } from '../data/users-data.js';
-import { ICommand, TAddToRoom } from '../types/types.js';
+import { ICommand, IGame, TAddToRoom } from '../types/types.js';
 
 class RoomController {
   addToRoom(ws: WebSocket, command: ICommand<TAddToRoom>) {
@@ -10,6 +10,7 @@ class RoomController {
     const user = userList.find((user) => user.ws === ws);
     if (user) {
       const secondPlayer = {
+        ws: user.ws,
         name: user?.name,
         index: userList.indexOf(user) + 1,
       };
@@ -23,8 +24,12 @@ class RoomController {
         }
       });
 
-      const game = playRooms.splice(indexRoom, 1);
-      gamesList.push(game[0]);
+      const deletedRoom = playRooms.splice(indexRoom - 1, 1);
+
+      const game: IGame = {
+        roomUsers: deletedRoom[0].roomUsers,
+      };
+      gamesList.push(game);
 
       websocketsList.forEach((wsClient) => {
         this.sendUpdateRoomState(wsClient);
@@ -36,6 +41,7 @@ class RoomController {
     const user = userList.find((user) => user.ws === ws);
     if (user) {
       const firstPlayer = {
+        ws: user.ws,
         name: user?.name,
         index: userList.indexOf(user) + 1,
       };
