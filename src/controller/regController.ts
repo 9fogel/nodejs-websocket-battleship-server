@@ -39,7 +39,7 @@ class RegController {
     return stringifyResponse(regResponse);
   }
 
-  private updateExistingUser(ws: WebSocket, userData: IRegUser) {
+  private updateExistingUser(ws: WebSocket, userData: IRegUser): void {
     const user = userList.find((user) => user.name === userData.name);
     if (user) {
       const userPreviousWs = user.ws;
