@@ -9,7 +9,6 @@ export const isNewUser = (name: string) => {
 
 export const isPasswordValid = (user: IRegUser) => {
   const isFound = userList.find((item) => item.name === user.name);
-  console.log(isFound?.password);
 
   return isFound?.password === user.password;
 };

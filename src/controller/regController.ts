@@ -15,10 +15,9 @@ class RegController {
     if (isNewUser(userData.name)) {
       userList.push({ ...userData, ws });
       websocketsList.add(ws);
-      // websocketsList.push(ws); //TODO: do we need this?
       console.log(`user ${userData.name} added to DB`);
-      // console.log(userList);
-      // console.log(websocketsList);
+    } else {
+      this.updateExistingUser(ws, userData);
     }
   }
 
@@ -38,6 +37,18 @@ class RegController {
     };
 
     return stringifyResponse(regResponse);
+  }
+
+  private updateExistingUser(ws: WebSocket, userData: IRegUser) {
+    const user = userList.find((user) => user.name === userData.name);
+    if (user) {
+      const userPreviousWs = user.ws;
+      if (userPreviousWs) {
+        websocketsList.delete(userPreviousWs);
+        websocketsList.add(ws);
+      }
+      user.ws = ws;
+    }
   }
 }
 
