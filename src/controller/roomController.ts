@@ -7,33 +7,35 @@ import { ICommand, IGame, TAddToRoom } from '../types/types.js';
 class RoomController {
   addToRoom(ws: WebSocket, command: ICommand<TAddToRoom>) {
     const { indexRoom } = command.data;
-    const user = userList.find((user) => user.ws === ws);
-    if (user) {
-      const secondPlayer = {
-        ws: user.ws,
-        name: user?.name,
-        index: userList.indexOf(user) + 1,
-      };
+    const isCreator = this.isRoomCreator(ws, indexRoom);
 
-      playRooms[indexRoom - 1].roomUsers.push(secondPlayer);
+    if (!isCreator) {
+      const user = userList.find((user) => user.ws === ws);
+      if (user) {
+        const secondPlayer = {
+          ws: user.ws,
+          name: user?.name,
+          index: userList.indexOf(user) + 1,
+        };
 
-      playRooms[indexRoom - 1].roomUsers.forEach((player, index) => {
-        const playerWs = userList[player.index - 1].ws;
-        if (playerWs) {
-          this.sendCreateGameResponse(playerWs, index);
-        }
-      });
+        playRooms[indexRoom - 1].roomUsers.push(secondPlayer);
 
-      const deletedRoom = playRooms.splice(indexRoom - 1, 1);
+        playRooms[indexRoom - 1].roomUsers.forEach((player, index) => {
+          const playerWs = userList[player.index - 1].ws;
+          if (playerWs) {
+            this.sendCreateGameResponse(playerWs, index);
+          }
+        });
 
-      const game: IGame = {
-        roomUsers: deletedRoom[0].roomUsers,
-      };
-      gamesList.push(game);
+        const deletedRoom = playRooms.splice(indexRoom - 1, 1);
 
-      websocketsList.forEach((wsClient) => {
-        this.sendUpdateRoomState(wsClient);
-      });
+        const game: IGame = {
+          roomUsers: deletedRoom[0].roomUsers,
+        };
+        gamesList.push(game);
+
+        this.sendUpdateRoomStateToAll();
+      }
     }
   }
 
@@ -52,22 +54,28 @@ class RoomController {
       playRooms.push(newRoom);
       console.log(playRooms[playRooms.length - 1]);
 
-      websocketsList.forEach((wsClient) => {
-        if (wsClient !== ws) {
-          this.sendUpdateRoomState(wsClient);
-        }
-      });
+      this.sendUpdateRoomStateToAll();
+
+      // websocketsList.forEach((wsClient) => {
+      //   if (wsClient !== ws) {
+      //     this.sendUpdateRoomState(wsClient);
+      //   }
+      // });
     }
   }
 
-  sendCreateGameResponse(ws: WebSocket, index: number) {
-    const createGameResponse = this.createGameResponse(index);
-    ws.send(createGameResponse);
+  sendUpdateRoomStateToAll(): void {
+    websocketsList.forEach((wsClient) => {
+      this.sendUpdateRoomState(wsClient);
+    });
   }
 
-  sendUpdateRoomState(ws: WebSocket) {
-    const updateRoomResponse = this.createRoomResponse();
-    ws.send(updateRoomResponse);
+  private isRoomCreator(ws: WebSocket, indexRoom: number): boolean {
+    const currentRoom = playRooms[indexRoom - 1];
+    const roomCreator = currentRoom.roomUsers.find((user) => user.ws === ws);
+    console.log('roomCreator', roomCreator);
+
+    return roomCreator ? true : false;
   }
 
   private createGameResponse(index: number): string {
@@ -92,6 +100,16 @@ class RoomController {
     };
 
     return stringifyResponse(roomResponse);
+  }
+
+  private sendCreateGameResponse(ws: WebSocket, index: number): void {
+    const createGameResponse = this.createGameResponse(index);
+    ws.send(createGameResponse);
+  }
+
+  private sendUpdateRoomState(ws: WebSocket): void {
+    const updateRoomResponse = this.createRoomResponse();
+    ws.send(updateRoomResponse);
   }
 }
 
