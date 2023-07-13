@@ -26,9 +26,9 @@ export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
     case 'add_ships':
       new ShipsController().addShipsToGameBoard(ws, data as ICommand<IAddShips>);
       break;
-    case 'start_game':
-      console.log("start game -only after server receives both player's ships positions");
-      break;
+    // case 'start_game':
+    //   console.log("start game -only after server receives both player's ships positions");
+    //   break;
     case 'attack':
       console.log('attack');
       break;

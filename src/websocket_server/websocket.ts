@@ -18,7 +18,6 @@ export function onConnect(ws: WebSocket, req: IncomingMessage): void {
   console.log(`Remote Port is ${req.socket.remotePort}`);
 
   ws.on('message', function message(command) {
-    console.log('ws on', command.toString());
     const parsedCommand = parseCommand(command);
     router(ws, parsedCommand);
   });
