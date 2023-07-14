@@ -30,6 +30,7 @@ type TRoomUser = {
   name: string;
   index: number /* user index in userList */;
   shipsList?: Array<IShip>;
+  shipsCoords?: Array<Tposition[]>;
   indexPlayer?: number;
 };
 
@@ -49,14 +50,18 @@ export interface IAddShips {
   indexPlayer: number /* id of the player in the current game - 0 for room creator, 1 for second player */;
 }
 
-interface IShip {
+export interface IShip {
   position: Tposition;
   direction: boolean;
   length: number;
   type: 'small' | 'medium' | 'large' | 'huge';
 }
 
-type Tposition = {
+export type Tposition = {
   x: number;
   y: number;
+};
+
+export type TShipLength = {
+  [key: string]: number;
 };
