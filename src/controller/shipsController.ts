@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { IAddShips, ICommand, IGame, IShip, TShipLength, Tposition,  } from '../types/types.js';
+import { IAddShips, ICommand, IGame, IShip, TShipLength, TPosition } from '../types/types.js';
 import { gamesList } from '../data/rooms-data.js';
 import { stringifyResponse } from '../utils/commandsHandler.js';
 import { userList } from '../data/users-data.js';
@@ -8,9 +8,9 @@ import GameController from './gameController.js';
 class ShipsController {
   addShipsToGameBoard(ws: WebSocket, command: ICommand<IAddShips>): void {
     const { gameId, ships, indexPlayer } = command.data;
-    console.log('gameId', gameId);
-    console.log('indexPlayer', indexPlayer);
-    console.log('ships', ships);
+    // console.log('gameId', gameId);
+    // console.log('indexPlayer', indexPlayer);
+    // console.log('ships', ships);
 
     const userShipsCoordinatesList = ships.map((ship) => this.convertShipToCoordinates(ship));
     console.log(userShipsCoordinatesList);
@@ -24,11 +24,13 @@ class ShipsController {
     }
 
     if (this.areBothPlayersReady(currentGame)) {
+      const turn = new GameController().generateTurn(currentGame, 0, 'start');
+
       currentGame.roomUsers.forEach((player, index) => {
         const playerWs = userList[player.index - 1].ws;
         if (playerWs) {
           this.sendCreateGameResponse(playerWs, currentGame, index);
-          new GameController().sendTurnResponse(playerWs, currentGame, index, 'start');
+          new GameController().sendTurnResponse(playerWs, turn);
         }
       });
     }
@@ -40,7 +42,7 @@ class ShipsController {
     return haveShips;
   }
 
-  private convertShipToCoordinates(ship: IShip): Array<Tposition> {
+  private convertShipToCoordinates(ship: IShip): Array<TPosition> {
     const shipCoordinates = [];
 
     const shipLength: TShipLength = {

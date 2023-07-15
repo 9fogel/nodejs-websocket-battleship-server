@@ -1,31 +1,50 @@
 import WebSocket from 'ws';
 import { stringifyResponse } from '../utils/commandsHandler.js';
-import { IGame } from '../types/types.js';
+import { IAttack, ICommand, IGame, TPosition } from '../types/types.js';
+import { gamesList } from '../data/rooms-data.js';
+import { userList } from '../data/users-data.js';
 
 class GameController {
-  sendTurnResponse(ws: WebSocket, currentGame: IGame, index: number, status: string): void {
-    const createTurnResponse = this.createTurnResponse(currentGame, index, status);
-    ws.send(createTurnResponse);
-  }
-
-  private createTurnResponse(currentGame: IGame, index: number, status: string): string {
-    const currentPlayerIndex = this.generateTurn(currentGame, index, status);
-    const turnResponse = {
-      type: 'turn',
-      data: {
-        currentPlayer: currentPlayerIndex,
-      },
-      id: 0,
+  handleAttack(command: ICommand<IAttack>): void {
+    const { gameId, x, y, indexPlayer } = command.data;
+    const currentGame = gamesList[gameId];
+    const attackedBoardIndex = indexPlayer ? 0 : 1;
+    const coordinates: TPosition = {
+      x,
+      y,
     };
+    // console.log('gameId', gameId);
+    // console.log(x, y);
+    // console.log('indexPlayer', indexPlayer);
 
-    return stringifyResponse(turnResponse);
+    //TODO: ignore attack if it wasn't this user turn
+    const whoseTurnIndex = currentGame.whoseTurnIndex;
+    if (whoseTurnIndex === indexPlayer) {
+      const status = this.detectMissOrKill(currentGame, attackedBoardIndex, coordinates);
+      const turn = this.generateTurn(currentGame, indexPlayer, status);
+
+      currentGame.roomUsers.forEach((player) => {
+        const playerWs = userList[player.index - 1].ws;
+
+        if (playerWs) {
+          this.sendAttackResponse(playerWs, coordinates, indexPlayer, status);
+          this.sendTurnResponse(playerWs, turn);
+        }
+      });
+    }
   }
 
-  private generateTurn(currentGame: IGame, index: number, status: string): number {
-    let whoseTurnIndex;
+  generateTurn(currentGame: IGame, index: number, status: string): number {
+    let whoseTurnIndex = 0;
+    const hasTurnSpecified = 'whoseTurnIndex' in currentGame;
+
     switch (status) {
       case 'start':
-        whoseTurnIndex = currentGame.whoseTurnIndex ? currentGame.whoseTurnIndex : Math.round(Math.random());
+        if (hasTurnSpecified) {
+          whoseTurnIndex = currentGame.whoseTurnIndex !== undefined ? currentGame.whoseTurnIndex : 0;
+        } else {
+          Math.round(Math.random());
+        }
         break;
       case 'miss':
         if (index) {
@@ -35,6 +54,7 @@ class GameController {
         }
         break;
       case 'kill':
+      case 'shot':
         if (index) {
           whoseTurnIndex = 1;
         } else {
@@ -45,10 +65,50 @@ class GameController {
         whoseTurnIndex = index;
     }
 
-    console.log('whoseTurn', whoseTurnIndex);
+    // console.log('whoseTurn', whoseTurnIndex);
     currentGame.whoseTurnIndex = whoseTurnIndex;
-    console.log(currentGame);
     return whoseTurnIndex;
+  }
+
+  sendAttackResponse(ws: WebSocket, coordinates: TPosition, indexPlayer: number, status: string): void {
+    const createAttackResponse = this.createAttackResponse(coordinates, indexPlayer, status);
+    ws.send(createAttackResponse);
+  }
+
+  sendTurnResponse(ws: WebSocket, turn: number): void {
+    const createTurnResponse = this.createTurnResponse(turn);
+    ws.send(createTurnResponse);
+  }
+
+  private createAttackResponse(coordinates: TPosition, indexPlayer: number, status: string): string {
+    const attackResponse = {
+      type: 'attack',
+      data: {
+        position: coordinates,
+        currentPlayer: indexPlayer,
+        status,
+      },
+      id: 0,
+    };
+
+    return stringifyResponse(attackResponse);
+  }
+
+  private createTurnResponse(turn: number): string {
+    const turnResponse = {
+      type: 'turn',
+      data: {
+        currentPlayer: turn,
+      },
+      id: 0,
+    };
+
+    return stringifyResponse(turnResponse);
+  }
+
+  private detectMissOrKill(currentGame: IGame, attackedBoardIndex: number, coordinates: TPosition) {
+    //TODO: write logic for detecting the result of attack - 'miss'|'killed'|'shot'
+    return 'miss';
   }
 }
 

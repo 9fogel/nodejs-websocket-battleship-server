@@ -1,9 +1,3 @@
-// export interface ICommand {
-//   type: string;
-//   data: IRegUser | Array<IRoom>;
-//   id: number;
-// }
-
 import { WebSocket } from 'ws';
 
 export interface ICommand<T> {
@@ -30,7 +24,7 @@ type TRoomUser = {
   name: string;
   index: number /* user index in userList */;
   shipsList?: Array<IShip>;
-  shipsCoords?: Array<Tposition[]>;
+  shipsCoords?: Array<TPosition[]>;
   indexPlayer?: number;
 };
 
@@ -51,13 +45,13 @@ export interface IAddShips {
 }
 
 export interface IShip {
-  position: Tposition;
+  position: TPosition;
   direction: boolean;
   length: number;
   type: 'small' | 'medium' | 'large' | 'huge';
 }
 
-export type Tposition = {
+export type TPosition = {
   x: number;
   y: number;
 };
@@ -65,3 +59,10 @@ export type Tposition = {
 export type TShipLength = {
   [key: string]: number;
 };
+
+export interface IAttack {
+  gameId: number;
+  x: number;
+  y: number;
+  indexPlayer: number;
+}

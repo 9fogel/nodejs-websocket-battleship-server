@@ -1,11 +1,12 @@
 import WebSocket from 'ws';
-import { IAddShips, ICommand, IRegUser, TAddToRoom } from '../types/types.js';
+import { IAddShips, IAttack, ICommand, IRegUser, TAddToRoom } from '../types/types.js';
 import RegController from '../controller/regController.js';
 import RoomController from '../controller/roomController.js';
 import ShipsController from '../controller/shipsController.js';
+import GameController from '../controller/gameController.js';
 
 export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
-  console.log('Data in router', data);
+  // console.log('Data in router', data);
   const commandType = data.type;
 
   switch (commandType) {
@@ -27,7 +28,8 @@ export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
       new ShipsController().addShipsToGameBoard(ws, data as ICommand<IAddShips>);
       break;
     case 'attack':
-      console.log('attack');
+      new GameController().handleAttack(data as ICommand<IAttack>);
+      // console.log('attack');
       break;
     case 'randomAttack':
       console.log('random attack');
