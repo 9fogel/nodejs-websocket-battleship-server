@@ -3,6 +3,7 @@ import { IAddShips, ICommand, IGame, IShip, TShipLength, Tposition,  } from '../
 import { gamesList } from '../data/rooms-data.js';
 import { stringifyResponse } from '../utils/commandsHandler.js';
 import { userList } from '../data/users-data.js';
+import GameController from './gameController.js';
 
 class ShipsController {
   addShipsToGameBoard(ws: WebSocket, command: ICommand<IAddShips>): void {
@@ -21,13 +22,13 @@ class ShipsController {
       currentPlayer.shipsList = ships;
       currentPlayer.shipsCoords = userShipsCoordinatesList;
     }
-    console.log(currentGame);
 
     if (this.areBothPlayersReady(currentGame)) {
       currentGame.roomUsers.forEach((player, index) => {
         const playerWs = userList[player.index - 1].ws;
         if (playerWs) {
           this.sendCreateGameResponse(playerWs, currentGame, index);
+          new GameController().sendTurnResponse(playerWs, currentGame, index, 'start');
         }
       });
     }

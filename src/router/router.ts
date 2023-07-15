@@ -26,22 +26,19 @@ export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
     case 'add_ships':
       new ShipsController().addShipsToGameBoard(ws, data as ICommand<IAddShips>);
       break;
-    // case 'start_game':
-    //   console.log("start game -only after server receives both player's ships positions");
-    //   break;
     case 'attack':
       console.log('attack');
       break;
     case 'randomAttack':
       console.log('random attack');
       break;
-    case 'turn':
-      console.log("Info about player's turn (send after game start and every attack, miss or kill result");
+      // case 'turn':
+      //   console.log("Info about player's turn (send after game start and every attack, miss or kill result");
       break;
     case 'finish':
       console.log('finish game');
       break;
     default:
-      console.log('Invalid input');
+      console.log('Invalid command');
   }
 };
