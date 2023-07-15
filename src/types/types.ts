@@ -62,7 +62,7 @@ export type TShipLength = {
 
 export interface IAttack {
   gameId: number;
-  x: number;
-  y: number;
+  x?: number;
+  y?: number;
   indexPlayer: number;
 }

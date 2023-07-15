@@ -6,18 +6,26 @@ import { userList } from '../data/users-data.js';
 
 class GameController {
   handleAttack(command: ICommand<IAttack>): void {
-    const { gameId, x, y, indexPlayer } = command.data;
+    const { gameId, indexPlayer } = command.data;
     const currentGame = gamesList[gameId];
     const attackedBoardIndex = indexPlayer ? 0 : 1;
-    const coordinates: TPosition = {
-      x,
-      y,
-    };
+
+    let coordinates: TPosition;
+
+    if (command.type === 'randomAttack') {
+      coordinates = this.generateRandomCoordinates();
+    } else {
+      const { x, y } = command.data;
+      coordinates = {
+        x: x ?? 0,
+        y: y ?? 0,
+      };
+    }
     // console.log('gameId', gameId);
     // console.log(x, y);
     // console.log('indexPlayer', indexPlayer);
+    console.log(coordinates);
 
-    //TODO: ignore attack if it wasn't this user turn
     const whoseTurnIndex = currentGame.whoseTurnIndex;
     if (whoseTurnIndex === indexPlayer) {
       const status = this.detectMissOrKill(currentGame, attackedBoardIndex, coordinates);
@@ -109,6 +117,15 @@ class GameController {
   private detectMissOrKill(currentGame: IGame, attackedBoardIndex: number, coordinates: TPosition) {
     //TODO: write logic for detecting the result of attack - 'miss'|'killed'|'shot'
     return 'miss';
+  }
+
+  private generateRandomCoordinates(): TPosition {
+    const coordinates = {
+      x: Math.floor(Math.random() * 10),
+      y: Math.floor(Math.random() * 10),
+    };
+
+    return coordinates;
   }
 }
 

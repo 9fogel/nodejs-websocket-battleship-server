@@ -15,9 +15,7 @@ export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
       new RoomController().sendUpdateRoomStateToAll();
       console.log('SEND update winners'); //TODO
       break;
-    case 'update_winners':
-      console.log('update winners');
-      break;
+
     case 'create_room':
       new RoomController().createNewRoom(ws);
       break;
@@ -28,17 +26,17 @@ export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
       new ShipsController().addShipsToGameBoard(ws, data as ICommand<IAddShips>);
       break;
     case 'attack':
-      new GameController().handleAttack(data as ICommand<IAttack>);
-      // console.log('attack');
-      break;
     case 'randomAttack':
-      console.log('random attack');
+      new GameController().handleAttack(data as ICommand<IAttack>);
       break;
-      // case 'turn':
-      //   console.log("Info about player's turn (send after game start and every attack, miss or kill result");
-      break;
+    // case 'randomAttack':
+    //   console.log('random attack');
+    //   break;
     case 'finish':
       console.log('finish game');
+      break;
+    case 'update_winners':
+      console.log('update winners');
       break;
     default:
       console.log('Invalid command');
