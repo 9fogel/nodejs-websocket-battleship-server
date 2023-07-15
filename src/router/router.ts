@@ -15,7 +15,6 @@ export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
       new RoomController().sendUpdateRoomStateToAll();
       console.log('SEND update winners'); //TODO
       break;
-
     case 'create_room':
       new RoomController().createNewRoom(ws);
       break;
@@ -29,9 +28,6 @@ export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
     case 'randomAttack':
       new GameController().handleAttack(data as ICommand<IAttack>);
       break;
-    // case 'randomAttack':
-    //   console.log('random attack');
-    //   break;
     case 'finish':
       console.log('finish game');
       break;

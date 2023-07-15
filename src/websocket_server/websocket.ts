@@ -13,9 +13,8 @@ export const wsServer: WebSocket.Server<typeof WebSocket, typeof IncomingMessage
 export function onConnect(ws: WebSocket, req: IncomingMessage): void {
   ws.on('error', console.error);
 
-  console.log(`WebSocket server works on ${WS_PORT}`);
-  console.log(`Remote Address is ${req.socket.remoteAddress}`);
-  console.log(`Remote Port is ${req.socket.remotePort}`);
+  console.log(`WebSocket server works on ${WS_PORT} port`);
+  console.log(`Remote Address is ${req.socket.remoteAddress}. Remote Port is ${req.socket.remotePort}`);
 
   ws.on('message', function message(command) {
     const parsedCommand = parseCommand(command);
@@ -25,8 +24,8 @@ export function onConnect(ws: WebSocket, req: IncomingMessage): void {
   ws.on('close', function close() {
     const user = userList.find((user) => user.ws === ws);
     if (user) {
-      console.log(`User ${user.name} exited, WebSocket closed`);
-      //TODO: check there are no active games with this user
+      console.log(`User ${user.name} disconnected, WebSocket closed`);
+      //TODO: check there are no active games with this user or rooms created
     } else {
       console.log('Unauthorized user exited, WebSocket closed');
     }
