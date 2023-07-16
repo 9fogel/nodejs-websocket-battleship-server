@@ -21,6 +21,7 @@ class ShipsController {
       currentPlayer.indexPlayer = indexPlayer;
       currentPlayer.shipsList = ships;
       currentPlayer.shipsCoords = userShipsCoordinatesList;
+      currentPlayer.woundedCoords = Array(4).fill([]);
     }
 
     if (this.areBothPlayersReady(currentGame)) {

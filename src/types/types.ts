@@ -25,6 +25,7 @@ type TRoomUser = {
   index: number /* user index in userList */;
   shipsList?: Array<IShip>;
   shipsCoords?: Array<TPosition[]>;
+  woundedCoords?: Array<TPosition[]>;
   indexPlayer?: number;
 };
 

@@ -116,7 +116,27 @@ class GameController {
 
   private detectMissOrKill(currentGame: IGame, attackedBoardIndex: number, coordinates: TPosition) {
     //TODO: write logic for detecting the result of attack - 'miss'|'killed'|'shot'
-    return 'miss';
+    let status = 'miss';
+    const shipCoords = currentGame.roomUsers[attackedBoardIndex].shipsCoords;
+    console.log(shipCoords);
+
+    if (shipCoords) {
+      for (let i = 0; i < shipCoords?.length; i++) {
+        const foundCoords = shipCoords[i].find((coords) => coords.x === coordinates.x && coords.y === coordinates.y);
+        console.log(foundCoords);
+
+        if (foundCoords) {
+          status = 'shot';
+          console.log('shot', status);
+          break;
+        } else {
+          status = 'miss';
+        }
+      }
+    }
+
+    console.log(status);
+    return status;
   }
 
   private generateRandomCoordinates(): TPosition {
