@@ -27,6 +27,7 @@ type TRoomUser = {
   shipsCoords?: Array<TPosition[]>;
   woundedCoords?: Array<TPosition[]>;
   killedShips?: Array<TPosition[]>;
+  isWinner?: boolean;
   indexPlayer?: number;
 };
 
@@ -67,4 +68,9 @@ export interface IAttack {
   x?: number;
   y?: number;
   indexPlayer: number;
+}
+
+export interface IWinner {
+  name: string;
+  wins: number;
 }

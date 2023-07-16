@@ -24,9 +24,10 @@ class GameController {
 
     const whoseTurnIndex = currentGame.whoseTurnIndex;
     if (whoseTurnIndex === indexPlayer) {
-      const status = this.detectMissOrKill(currentGame, attackedBoardIndex, coordinates);
+      const status = this.detectMissOrKill(currentGame, attackedBoardIndex, indexPlayer, coordinates);
       const turn = this.generateTurn(currentGame, indexPlayer, status);
       const killedShip = currentGame.roomUsers[attackedBoardIndex].killedShips?.pop();
+      // const winnerUser = currentGame.roomUsers.find((user) => user.isWinner);
 
       currentGame.roomUsers.forEach((player) => {
         const playerWs = userList[player.index - 1].ws;
@@ -36,6 +37,11 @@ class GameController {
           if (status === 'killed' && killedShip) {
             this.sendKillShipResponse(playerWs, killedShip, indexPlayer);
             //TODO: if some ship is killed send additional miss response for surrounding cells
+            const isGameFinished = currentGame.roomUsers[indexPlayer].isWinner;
+            if (isGameFinished) {
+              this.sendFinishResponse(playerWs, indexPlayer);
+              //TODO: send winners
+            }
           }
           this.sendTurnResponse(playerWs, turn);
         }
@@ -102,6 +108,18 @@ class GameController {
     return stringifyResponse(attackResponse);
   }
 
+  private createFinishResponse(userIndex: number): string {
+    const finishResponse = {
+      type: 'finish',
+      data: {
+        winPlayer: userIndex,
+      },
+      id: 0,
+    };
+
+    return stringifyResponse(finishResponse);
+  }
+
   private createTurnResponse(turn: number): string {
     const turnResponse = {
       type: 'turn',
@@ -114,11 +132,16 @@ class GameController {
     return stringifyResponse(turnResponse);
   }
 
-  private detectMissOrKill(currentGame: IGame, attackedBoardIndex: number, coordinates: TPosition): string {
+  private detectMissOrKill(
+    currentGame: IGame,
+    attackedBoardIndex: number,
+    indexPlayer: number,
+    coordinates: TPosition,
+  ): string {
     let status = 'miss';
     const shipCoords = currentGame.roomUsers[attackedBoardIndex].shipsCoords;
     const woundedCoords = currentGame.roomUsers[attackedBoardIndex].woundedCoords;
-    console.log(shipCoords);
+    // console.log(shipCoords);
 
     let foundCoords;
     let shipIndex;
@@ -142,6 +165,13 @@ class GameController {
           status = 'killed';
           const killedShip = woundedCoords[shipIndex];
           currentGame.roomUsers[attackedBoardIndex].killedShips?.push(killedShip);
+
+          //TODO: check if the last ship was killed
+          const opponentShipsLeft = currentGame.roomUsers[attackedBoardIndex].shipsCoords;
+          if (opponentShipsLeft) {
+            const isWinner = this.doesAttackerWin(opponentShipsLeft);
+            currentGame.roomUsers[indexPlayer].isWinner = isWinner;
+          }
         }
       } else {
         status = 'miss';
@@ -151,10 +181,10 @@ class GameController {
     return status;
   }
 
-  private sendKillShipResponse(playerWs: WebSocket, killedShip: Array<TPosition>, indexPlayer: number): void {
-    killedShip.forEach((coordinates) => {
-      this.sendAttackResponse(playerWs, coordinates, indexPlayer, 'killed');
-    });
+  private doesAttackerWin(opponentShips: Array<TPosition[]>): boolean {
+    const allShipsKilled = opponentShips.every((ship) => ship.length === 0);
+
+    return allShipsKilled;
   }
 
   private generateRandomCoordinates(): TPosition {
@@ -164,6 +194,17 @@ class GameController {
     };
 
     return coordinates;
+  }
+
+  private sendKillShipResponse(playerWs: WebSocket, killedShip: Array<TPosition>, indexPlayer: number): void {
+    killedShip.forEach((coordinates) => {
+      this.sendAttackResponse(playerWs, coordinates, indexPlayer, 'killed');
+    });
+  }
+
+  private sendFinishResponse(ws: WebSocket, userIndex: number): void {
+    const createFinishResponse = this.createFinishResponse(userIndex);
+    ws.send(createFinishResponse);
   }
 }
 
