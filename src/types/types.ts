@@ -26,6 +26,7 @@ type TRoomUser = {
   shipsList?: Array<IShip>;
   shipsCoords?: Array<TPosition[]>;
   woundedCoords?: Array<TPosition[]>;
+  killedShips?: Array<TPosition[]>;
   indexPlayer?: number;
 };
 

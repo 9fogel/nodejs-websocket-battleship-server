@@ -21,21 +21,22 @@ class GameController {
         y: y ?? 0,
       };
     }
-    // console.log('gameId', gameId);
-    // console.log(x, y);
-    // console.log('indexPlayer', indexPlayer);
-    console.log(coordinates);
 
     const whoseTurnIndex = currentGame.whoseTurnIndex;
     if (whoseTurnIndex === indexPlayer) {
       const status = this.detectMissOrKill(currentGame, attackedBoardIndex, coordinates);
       const turn = this.generateTurn(currentGame, indexPlayer, status);
+      const killedShip = currentGame.roomUsers[attackedBoardIndex].killedShips?.pop();
 
       currentGame.roomUsers.forEach((player) => {
         const playerWs = userList[player.index - 1].ws;
 
         if (playerWs) {
           this.sendAttackResponse(playerWs, coordinates, indexPlayer, status);
+          if (status === 'killed' && killedShip) {
+            this.sendKillShipResponse(playerWs, killedShip, indexPlayer);
+            //TODO: if some ship is killed send additional miss response for surrounding cells
+          }
           this.sendTurnResponse(playerWs, turn);
         }
       });
@@ -73,7 +74,6 @@ class GameController {
         whoseTurnIndex = index;
     }
 
-    // console.log('whoseTurn', whoseTurnIndex);
     currentGame.whoseTurnIndex = whoseTurnIndex;
     return whoseTurnIndex;
   }
@@ -115,7 +115,6 @@ class GameController {
   }
 
   private detectMissOrKill(currentGame: IGame, attackedBoardIndex: number, coordinates: TPosition): string {
-    //TODO: write logic for detecting the result of attack - 'miss'|'killed'|'shot'
     let status = 'miss';
     const shipCoords = currentGame.roomUsers[attackedBoardIndex].shipsCoords;
     const woundedCoords = currentGame.roomUsers[attackedBoardIndex].woundedCoords;
@@ -133,65 +132,28 @@ class GameController {
         }
       }
 
-      if (foundCoords && shipIndex && woundedCoords) {
+      if (foundCoords && shipIndex !== undefined && woundedCoords) {
         status = 'shot';
         const foundCoordsIndex = shipCoords[shipIndex].indexOf(foundCoords);
         const wounded = shipCoords[shipIndex].splice(foundCoordsIndex, 1);
-        console.log('wounded', wounded);
         woundedCoords[shipIndex].push(wounded[0]);
-        console.log(woundedCoords);
 
         if (shipCoords[shipIndex].length === 0) {
           status = 'killed';
           const killedShip = woundedCoords[shipIndex];
-          console.log('killedShip', killedShip);
-          this.markAsKilled(killedShip);
+          currentGame.roomUsers[attackedBoardIndex].killedShips?.push(killedShip);
         }
       } else {
         status = 'miss';
       }
     }
 
-    // if (shipCoords) {
-    //   for (let i = 0; i < shipCoords?.length; i++) {
-    //     const foundCoords = shipCoords[i].find((coords) => coords.x === coordinates.x && coords.y === coordinates.y);
-    //     // console.log(foundCoords);
-
-    //     if (foundCoords && woundedCoords) {
-    //       status = 'shot';
-    //       console.log('shot', status);
-
-    //       const foundCoordsIndex = shipCoords[i].indexOf(foundCoords);
-    //       // console.log('foundCoordsIndex', foundCoordsIndex);
-    //       const wounded = shipCoords[i].splice(foundCoordsIndex, 1);
-    //       // console.log('wounded', wounded);
-    //       // console.log('woundedCoords[i]', woundedCoords[i]);
-    //       woundedCoords[i].push(wounded[0]); // TODO: check what happens here - value is pushed to all 10 arrays
-
-    //       // console.log(woundedCoords);
-    //       // console.log(i);
-
-    //       if (shipCoords[i].length === 0) {
-    //         status = 'killed';
-    //         const killedShip = woundedCoords[i];
-    //         console.log('killedShip', killedShip);
-    //         this.markAsKilled(killedShip);
-    //       }
-    //       break;
-    //     } else {
-    //       status = 'miss';
-    //     }
-    //   }
-    // }
-
-    console.log(status);
     return status;
   }
 
-  private markAsKilled(killedShip: Array<TPosition>) {
+  private sendKillShipResponse(playerWs: WebSocket, killedShip: Array<TPosition>, indexPlayer: number): void {
     killedShip.forEach((coordinates) => {
-      //TODO: send attack killed response
-      //call method for marking surrounding cells as missed and sending response attack-miss
+      this.sendAttackResponse(playerWs, coordinates, indexPlayer, 'killed');
     });
   }
 

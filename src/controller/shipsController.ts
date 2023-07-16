@@ -8,21 +8,17 @@ import GameController from './gameController.js';
 class ShipsController {
   addShipsToGameBoard(ws: WebSocket, command: ICommand<IAddShips>): void {
     const { gameId, ships, indexPlayer } = command.data;
-    // console.log('gameId', gameId);
-    // console.log('indexPlayer', indexPlayer);
-    // console.log('ships', ships);
-
     const userShipsCoordinatesList = ships.map((ship) => this.convertShipToCoordinates(ship));
     const shipsAmount = userShipsCoordinatesList.length;
-    // console.log(userShipsCoordinatesList);
-
     const currentGame = gamesList[gameId];
     const currentPlayer = currentGame.roomUsers.find((user) => user.ws === ws);
+
     if (currentPlayer) {
       currentPlayer.indexPlayer = indexPlayer;
       currentPlayer.shipsList = ships;
       currentPlayer.shipsCoords = userShipsCoordinatesList;
       currentPlayer.woundedCoords = Array.from({ length: shipsAmount }, () => []);
+      currentPlayer.killedShips = [];
     }
 
     if (this.areBothPlayersReady(currentGame)) {
