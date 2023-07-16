@@ -25,7 +25,7 @@ export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
       new ShipsController().addShipsToGameBoard(ws, data as ICommand<IAddShips>);
       break;
     case 'attack':
-    case 'randomAttack':
+    // case 'randomAttack':
       new GameController().handleAttack(data as ICommand<IAttack>);
       break;
     case 'finish':

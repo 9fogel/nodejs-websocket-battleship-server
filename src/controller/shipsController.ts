@@ -13,7 +13,8 @@ class ShipsController {
     // console.log('ships', ships);
 
     const userShipsCoordinatesList = ships.map((ship) => this.convertShipToCoordinates(ship));
-    console.log(userShipsCoordinatesList);
+    const shipsAmount = userShipsCoordinatesList.length;
+    // console.log(userShipsCoordinatesList);
 
     const currentGame = gamesList[gameId];
     const currentPlayer = currentGame.roomUsers.find((user) => user.ws === ws);
@@ -21,7 +22,7 @@ class ShipsController {
       currentPlayer.indexPlayer = indexPlayer;
       currentPlayer.shipsList = ships;
       currentPlayer.shipsCoords = userShipsCoordinatesList;
-      currentPlayer.woundedCoords = Array(4).fill([]);
+      currentPlayer.woundedCoords = Array.from({ length: shipsAmount }, () => []);
     }
 
     if (this.areBothPlayersReady(currentGame)) {
