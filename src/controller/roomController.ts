@@ -52,7 +52,6 @@ class RoomController {
         roomUsers: [firstPlayer],
       };
       playRooms.push(newRoom);
-      console.log(playRooms[playRooms.length - 1]);
 
       this.sendUpdateRoomStateToAll();
     }
@@ -109,7 +108,6 @@ class RoomController {
 
   private isRoomCreator(ws: WebSocket, indexRoom: number): boolean {
     const currentRoom = playRooms[indexRoom - 1];
-    console.log(currentRoom);
     if (currentRoom) {
       const roomCreator = currentRoom.roomUsers?.find((user) => user.ws === ws);
       return roomCreator ? true : false;

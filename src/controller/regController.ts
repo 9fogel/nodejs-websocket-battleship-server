@@ -1,14 +1,25 @@
 import WebSocket from 'ws';
-import { ICommand, IRegUser } from '../types/types.js';
+import { ICommand, IRegUser, IWinner } from '../types/types.js';
 import { stringifyResponse } from '../utils/commandsHandler.js';
 import { isNewUser, isPasswordValid } from '../utils/validators.js';
-import { userList, websocketsList } from '../data/users-data.js';
+import { userList, websocketsList, winnersList as winners } from '../data/users-data.js';
 
 class RegController {
   sendRegResponse(ws: WebSocket, command: ICommand<IRegUser>): void {
     const response = this.createRegResponse(command);
     this.addUser(ws, command.data);
     ws.send(response);
+  }
+
+  sendUpdateWinnersResponse(ws: WebSocket, winners: Array<IWinner>): void {
+    const createWinnersResponse = this.createWinnersResponse(winners);
+    ws.send(createWinnersResponse);
+  }
+
+  sendUpdateWinnersToAll(): void {
+    websocketsList.forEach((wsClient) => {
+      this.sendUpdateWinnersResponse(wsClient, winners);
+    });
   }
 
   private addUser(ws: WebSocket, userData: IRegUser): void {
@@ -38,6 +49,16 @@ class RegController {
     };
 
     return stringifyResponse(regResponse);
+  }
+
+  private createWinnersResponse(winners: Array<IWinner>) {
+    const winnersResponse = {
+      type: 'update_winners',
+      data: winners,
+      id: 0,
+    };
+
+    return stringifyResponse(winnersResponse);
   }
 
   private updateExistingUser(ws: WebSocket, userData: IRegUser): void {

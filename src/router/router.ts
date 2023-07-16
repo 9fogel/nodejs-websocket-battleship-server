@@ -6,14 +6,13 @@ import ShipsController from '../controller/shipsController.js';
 import GameController from '../controller/gameController.js';
 
 export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
-  // console.log('Data in router', data);
   const commandType = data.type;
 
   switch (commandType) {
     case 'reg':
       new RegController().sendRegResponse(ws, data as ICommand<IRegUser>);
       new RoomController().sendUpdateRoomStateToAll();
-      console.log('SEND update winners'); //TODO
+      new RegController().sendUpdateWinnersToAll();
       break;
     case 'create_room':
       new RoomController().createNewRoom(ws);
@@ -27,12 +26,6 @@ export const router = <T>(ws: WebSocket, data: ICommand<T>) => {
     case 'attack':
     case 'randomAttack':
       new GameController().handleAttack(data as ICommand<IAttack>);
-      break;
-    case 'finish':
-      console.log('finish game');
-      break;
-    case 'update_winners':
-      console.log('update winners');
       break;
     default:
       console.log('Invalid command');

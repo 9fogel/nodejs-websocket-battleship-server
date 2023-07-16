@@ -2,7 +2,8 @@ import WebSocket from 'ws';
 import { stringifyResponse } from '../utils/commandsHandler.js';
 import { IAttack, ICommand, IGame, TPosition } from '../types/types.js';
 import { gamesList } from '../data/rooms-data.js';
-import { userList } from '../data/users-data.js';
+import { userList, winnersList } from '../data/users-data.js';
+import RegController from './regController.js';
 
 class GameController {
   handleAttack(command: ICommand<IAttack>): void {
@@ -27,7 +28,6 @@ class GameController {
       const status = this.detectMissOrKill(currentGame, attackedBoardIndex, indexPlayer, coordinates);
       const turn = this.generateTurn(currentGame, indexPlayer, status);
       const killedShip = currentGame.roomUsers[attackedBoardIndex].killedShips?.pop();
-      // const winnerUser = currentGame.roomUsers.find((user) => user.isWinner);
 
       currentGame.roomUsers.forEach((player) => {
         const playerWs = userList[player.index - 1].ws;
@@ -40,7 +40,7 @@ class GameController {
             const isGameFinished = currentGame.roomUsers[indexPlayer].isWinner;
             if (isGameFinished) {
               this.sendFinishResponse(playerWs, indexPlayer);
-              //TODO: send winners
+              new RegController().sendUpdateWinnersResponse(playerWs, winnersList);
             }
           }
           this.sendTurnResponse(playerWs, turn);
@@ -167,11 +167,12 @@ class GameController {
           currentGame.roomUsers[attackedBoardIndex].killedShips?.push(killedShip);
 
           //TODO: check if the last ship was killed
-          const opponentShipsLeft = currentGame.roomUsers[attackedBoardIndex].shipsCoords;
-          if (opponentShipsLeft) {
-            const isWinner = this.doesAttackerWin(opponentShipsLeft);
-            currentGame.roomUsers[indexPlayer].isWinner = isWinner;
-          }
+          this.handleWinners(currentGame, attackedBoardIndex, indexPlayer);
+          // const opponentShipsLeft = currentGame.roomUsers[attackedBoardIndex].shipsCoords;
+          // if (opponentShipsLeft) {
+          //   const isWinner = this.doesAttackerWin(opponentShipsLeft);
+          //   currentGame.roomUsers[indexPlayer].isWinner = isWinner;
+          // }
         }
       } else {
         status = 'miss';
@@ -194,6 +195,30 @@ class GameController {
     };
 
     return coordinates;
+  }
+
+  private handleWinners(currentGame: IGame, attackedBoardIndex: number, indexPlayer: number): void {
+    const opponentShipsLeft = currentGame.roomUsers[attackedBoardIndex].shipsCoords;
+    if (opponentShipsLeft) {
+      const isWinner = this.doesAttackerWin(opponentShipsLeft);
+      currentGame.roomUsers[indexPlayer].isWinner = isWinner;
+
+      if (isWinner) {
+        const winnerUser = currentGame.roomUsers[indexPlayer];
+        const winnerUserName = winnerUser.name;
+        const existingWinner = winnersList.find((winner) => winner.name === winnerUserName);
+
+        if (existingWinner) {
+          existingWinner.wins += 1;
+        } else {
+          const newWinner = {
+            name: winnerUserName,
+            wins: 1,
+          };
+          winnersList.push(newWinner);
+        }
+      }
+    }
   }
 
   private sendKillShipResponse(playerWs: WebSocket, killedShip: Array<TPosition>, indexPlayer: number): void {
