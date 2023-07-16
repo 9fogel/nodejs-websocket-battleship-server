@@ -33,6 +33,9 @@ class GameController {
         const playerWs = userList[player.index - 1].ws;
 
         if (playerWs) {
+          if (status === 'double-shot') {
+            return;
+          }
           this.sendAttackResponse(playerWs, coordinates, indexPlayer, status);
           if (status === 'killed' && killedShip) {
             this.sendKillShipResponse(playerWs, killedShip, indexPlayer);
@@ -166,16 +169,22 @@ class GameController {
           const killedShip = woundedCoords[shipIndex];
           currentGame.roomUsers[attackedBoardIndex].killedShips?.push(killedShip);
 
-          //TODO: check if the last ship was killed
           this.handleWinners(currentGame, attackedBoardIndex, indexPlayer);
-          // const opponentShipsLeft = currentGame.roomUsers[attackedBoardIndex].shipsCoords;
-          // if (opponentShipsLeft) {
-          //   const isWinner = this.doesAttackerWin(opponentShipsLeft);
-          //   currentGame.roomUsers[indexPlayer].isWinner = isWinner;
-          // }
         }
       } else {
-        status = 'miss';
+        if (woundedCoords) {
+          for (let i = 0; i < woundedCoords?.length; i++) {
+            const doubleShotCoords = woundedCoords[i].find(
+              (coords) => coords.x === coordinates.x && coords.y === coordinates.y,
+            );
+            if (doubleShotCoords) {
+              status = 'double-shot';
+              break;
+            } else {
+              status = 'miss';
+            }
+          }
+        }
       }
     }
 
