@@ -32,13 +32,12 @@ export function onConnect(ws: WebSocket, req: IncomingMessage): void {
       console.log(
         `User ${user.name} disconnected, WebSocket closed, rooms created by this user deleted automatically\n`,
       );
-      //TODO: check there are no active games with this user
     } else {
       console.log('Unauthorized user exited, WebSocket closed\n');
     }
   });
 }
 
-// export function onClose(): void {
-//   console.log('WebSocket closed');
-// }
+export function onClose(): void {
+  console.log('WebSocket Server closed');
+}

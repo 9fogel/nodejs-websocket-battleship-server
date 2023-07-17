@@ -36,7 +36,6 @@ export type TAddToRoom = {
 };
 
 export interface IGame {
-  // gameId?: number /* index in gamesList */;
   roomUsers: Array<TRoomUser>;
   whoseTurnIndex?: number /* 0 or 1 */;
 }

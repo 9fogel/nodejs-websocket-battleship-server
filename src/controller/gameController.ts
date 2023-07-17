@@ -4,7 +4,6 @@ import { IAttack, ICommand, IGame, IRegUser, TPosition, TRoomUser } from '../typ
 import { gamesList } from '../data/rooms-data.js';
 import { userList, winnersList } from '../data/users-data.js';
 import RegController from './regController.js';
-import { kill } from 'process';
 
 class GameController {
   handleAttack(command: ICommand<IAttack>): void {
