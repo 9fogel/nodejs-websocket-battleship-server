@@ -52,6 +52,8 @@ class GameController {
             this.sendTurnResponse(playerWs, turn);
           }
         });
+      } else {
+        console.log(`RESULT: This user cannot attack now, as it's not his turn\n`);
       }
     }
   }
