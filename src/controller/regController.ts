@@ -26,10 +26,10 @@ class RegController {
     if (isNewUser(userData.name)) {
       userList.push({ ...userData, ws });
       websocketsList.add(ws);
-      console.log(`User ${userData.name} added to DB`);
+      console.log(`User ${userData.name} added to DB\n`);
     } else {
       this.updateExistingUser(ws, userData);
-      console.log(`User ${userData.name} logged in again`);
+      console.log(`User ${userData.name} logged in again\n`);
     }
   }
 

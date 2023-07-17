@@ -34,6 +34,7 @@ class RoomController {
         };
         gamesList.push(game);
 
+        this.deleteRoomsCreatedByUser(user);
         this.sendUpdateRoomStateToAll();
       }
     }
@@ -54,6 +55,16 @@ class RoomController {
       playRooms.push(newRoom);
 
       this.sendUpdateRoomStateToAll();
+    }
+  }
+
+  deleteRoomsCreatedByUser(user: IRegUser): void {
+    const foundRoom = playRooms.find((room) => {
+      return room.roomUsers.some((roomUser) => roomUser.name === user.name);
+    });
+    if (foundRoom) {
+      const foundRoomIndex = playRooms.indexOf(foundRoom);
+      playRooms.splice(foundRoomIndex, 1);
     }
   }
 
