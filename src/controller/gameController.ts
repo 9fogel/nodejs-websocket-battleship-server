@@ -4,6 +4,7 @@ import { IAttack, ICommand, IGame, IRegUser, TPosition, TRoomUser } from '../typ
 import { gamesList } from '../data/rooms-data.js';
 import { userList, winnersList } from '../data/users-data.js';
 import RegController from './regController.js';
+import { kill } from 'process';
 
 class GameController {
   handleAttack(command: ICommand<IAttack>): void {
@@ -39,7 +40,8 @@ class GameController {
           this.sendAttackResponse(playerWs, coordinates, indexPlayer, status);
           if (status === 'killed' && killedShip) {
             this.sendKillShipResponse(playerWs, killedShip, indexPlayer);
-            //TODO: if some ship is killed send additional miss response for surrounding cells
+            this.sendSurroundingCellsResponse(playerWs, killedShip, indexPlayer);
+
             const isGameFinished = currentGame.roomUsers[indexPlayer].isWinner;
             if (isGameFinished) {
               this.sendFinishResponse(playerWs, indexPlayer);
@@ -57,7 +59,6 @@ class GameController {
       return game.roomUsers.some((roomUser) => roomUser.name === user.name);
     });
     if (foundGame) {
-      // console.log('foundGame', foundGame);
       const foundGameIndex = gamesList.indexOf(foundGame);
       const exitedPlayer = gamesList[foundGameIndex].roomUsers.find((roomUser) => roomUser.name === user.name);
       let winnerPlayerIndex;
@@ -82,7 +83,6 @@ class GameController {
           new RegController().sendUpdateWinnersToAll();
         }
       }
-      // gamesList.splice(foundGameIndex, 1);
     }
   }
 
@@ -193,7 +193,6 @@ class GameController {
     let status = 'miss';
     const shipCoords = currentGame.roomUsers[attackedBoardIndex].shipsCoords;
     const woundedCoords = currentGame.roomUsers[attackedBoardIndex].woundedCoords;
-    // console.log(shipCoords);
 
     let foundCoords;
     let shipIndex;
@@ -255,6 +254,36 @@ class GameController {
     return coordinates;
   }
 
+  private generateSurroundingCells(killedShip: Array<TPosition>): Array<TPosition> {
+    const surroundingCells: Array<TPosition> = [];
+
+    killedShip.forEach((original) => {
+      for (let i = original.x - 1; i <= original.x + 1; i++) {
+        for (let k = original.y - 1; k <= original.y + 1; k++) {
+          const surroundingCoords: TPosition = {
+            x: i,
+            y: k,
+          };
+
+          const isKilledCoords = killedShip.find(
+            (coords) => coords.x === surroundingCoords.x && coords.y === surroundingCoords.y,
+          );
+          const isCellIncluded = surroundingCells.find(
+            (cell) => cell.x === surroundingCoords.x && cell.y === surroundingCoords.y,
+          );
+          const isNegativeValue = surroundingCoords.x < 0 || surroundingCoords.y < 0;
+          const isMoreThanTen = surroundingCoords.x > 9 || surroundingCoords.y > 9;
+
+          if (!isKilledCoords && !isCellIncluded && !isNegativeValue && !isMoreThanTen) {
+            surroundingCells.push(surroundingCoords);
+          }
+        }
+      }
+    });
+
+    return surroundingCells;
+  }
+
   private handleWinners(currentGame: IGame, attackedBoardIndex: number, indexPlayer: number): void {
     const opponentShipsLeft = currentGame.roomUsers[attackedBoardIndex].shipsCoords;
     if (opponentShipsLeft) {
@@ -271,6 +300,13 @@ class GameController {
   private sendKillShipResponse(playerWs: WebSocket, killedShip: Array<TPosition>, indexPlayer: number): void {
     killedShip.forEach((coordinates) => {
       this.sendAttackResponse(playerWs, coordinates, indexPlayer, 'killed');
+    });
+  }
+
+  private sendSurroundingCellsResponse(playerWs: WebSocket, killedShip: Array<TPosition>, indexPlayer: number): void {
+    const surroundingCells = this.generateSurroundingCells(killedShip);
+    surroundingCells.forEach((coordinates) => {
+      this.sendAttackResponse(playerWs, coordinates, indexPlayer, 'miss');
     });
   }
 
