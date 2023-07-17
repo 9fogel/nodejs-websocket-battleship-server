@@ -4,6 +4,7 @@ import { router } from '../router/router.js';
 import { parseCommand } from '../utils/commandsHandler.js';
 import { userList } from '../data/users-data.js';
 import RoomController from '../controller/roomController.js';
+import GameController from '../controller/gameController.js';
 
 const WS_PORT = 3000;
 
@@ -27,6 +28,7 @@ export function onConnect(ws: WebSocket, req: IncomingMessage): void {
     if (user) {
       new RoomController().deleteRoomsCreatedByUser(user);
       new RoomController().sendUpdateRoomStateToAll();
+      new GameController().handleTechnicalDefeat(user);
       console.log(
         `User ${user.name} disconnected, WebSocket closed, rooms created by this user deleted automatically\n`,
       );

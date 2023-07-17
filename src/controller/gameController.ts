@@ -1,6 +1,6 @@
 import WebSocket from 'ws';
 import { stringifyResponse } from '../utils/commandsHandler.js';
-import { IAttack, ICommand, IGame, TPosition } from '../types/types.js';
+import { IAttack, ICommand, IGame, IRegUser, TPosition, TRoomUser } from '../types/types.js';
 import { gamesList } from '../data/rooms-data.js';
 import { userList, winnersList } from '../data/users-data.js';
 import RegController from './regController.js';
@@ -52,6 +52,40 @@ class GameController {
     }
   }
 
+  handleTechnicalDefeat(user: IRegUser): void {
+    const foundGame = gamesList.find((game) => {
+      return game.roomUsers.some((roomUser) => roomUser.name === user.name);
+    });
+    if (foundGame) {
+      // console.log('foundGame', foundGame);
+      const foundGameIndex = gamesList.indexOf(foundGame);
+      const exitedPlayer = gamesList[foundGameIndex].roomUsers.find((roomUser) => roomUser.name === user.name);
+      let winnerPlayerIndex;
+
+      if (exitedPlayer) {
+        const playerIndex = gamesList[foundGameIndex].roomUsers.indexOf(exitedPlayer);
+        if (playerIndex) {
+          winnerPlayerIndex = 0;
+        } else {
+          winnerPlayerIndex = 1;
+        }
+        const losingPlayer = gamesList[foundGameIndex].roomUsers[playerIndex];
+        const winnerUser = gamesList[foundGameIndex].roomUsers[winnerPlayerIndex];
+        losingPlayer.isWinner = false;
+        winnerUser.isWinner = true;
+
+        const playerWs = winnerUser.ws;
+        if (playerWs) {
+          console.log('Game finished with technical defeat');
+          this.addWinner(winnerUser);
+          this.sendFinishResponse(playerWs, winnerPlayerIndex);
+          new RegController().sendUpdateWinnersToAll();
+        }
+      }
+      // gamesList.splice(foundGameIndex, 1);
+    }
+  }
+
   generateTurn(currentGame: IGame, index: number, status: string): number {
     let whoseTurnIndex = 0;
     const hasTurnSpecified = 'whoseTurnIndex' in currentGame;
@@ -95,6 +129,21 @@ class GameController {
   sendTurnResponse(ws: WebSocket, turn: number): void {
     const createTurnResponse = this.createTurnResponse(turn);
     ws.send(createTurnResponse);
+  }
+
+  private addWinner(winnerUser: TRoomUser): void {
+    const winnerUserName = winnerUser.name;
+    const existingWinner = winnersList.find((winner) => winner.name === winnerUserName);
+
+    if (existingWinner) {
+      existingWinner.wins += 1;
+    } else {
+      const newWinner = {
+        name: winnerUserName,
+        wins: 1,
+      };
+      winnersList.push(newWinner);
+    }
   }
 
   private createAttackResponse(coordinates: TPosition, indexPlayer: number, status: string): string {
@@ -214,18 +263,7 @@ class GameController {
 
       if (isWinner) {
         const winnerUser = currentGame.roomUsers[indexPlayer];
-        const winnerUserName = winnerUser.name;
-        const existingWinner = winnersList.find((winner) => winner.name === winnerUserName);
-
-        if (existingWinner) {
-          existingWinner.wins += 1;
-        } else {
-          const newWinner = {
-            name: winnerUserName,
-            wins: 1,
-          };
-          winnersList.push(newWinner);
-        }
+        this.addWinner(winnerUser);
       }
     }
   }
