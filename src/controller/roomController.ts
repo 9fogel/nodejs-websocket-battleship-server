@@ -1,5 +1,5 @@
 import WebSocket from 'ws';
-import { gamesList, playRooms } from '../data/rooms-data.js';
+import { gameStats, gamesList, playRooms } from '../data/rooms-data.js';
 import { stringifyResponse } from '../utils/commandsHandler.js';
 import { userList, websocketsList } from '../data/users-data.js';
 import { ICommand, IGame, IRegUser, TAddToRoom } from '../types/types.js';
@@ -30,9 +30,11 @@ class RoomController {
         const deletedRoom = playRooms.splice(indexRoom - 1, 1);
 
         const game: IGame = {
+          gameId: gameStats.count,
           roomUsers: deletedRoom[0].roomUsers,
         };
         gamesList.push(game);
+        gameStats.count += 1;
 
         this.deleteRoomsCreatedByUser(user);
         this.sendUpdateRoomStateToAll();
@@ -78,7 +80,7 @@ class RoomController {
     const gameResponse = {
       type: 'create_game',
       data: {
-        idGame: gamesList.length,
+        idGame: gameStats.count,
         idPlayer: index,
       },
       id: 0,

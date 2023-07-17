@@ -8,7 +8,7 @@ import RegController from './regController.js';
 class GameController {
   handleAttack(command: ICommand<IAttack>): void {
     const { gameId, indexPlayer } = command.data;
-    const currentGame = gamesList[gameId];
+    const currentGame = gamesList.find((game) => game.gameId === gameId);
     const attackedBoardIndex = indexPlayer ? 0 : 1;
 
     let coordinates: TPosition;
@@ -23,33 +23,35 @@ class GameController {
       };
     }
 
-    const whoseTurnIndex = currentGame.whoseTurnIndex;
-    if (whoseTurnIndex === indexPlayer) {
-      const status = this.detectMissOrKill(currentGame, attackedBoardIndex, indexPlayer, coordinates);
-      const turn = this.generateTurn(currentGame, indexPlayer, status);
-      const killedShip = currentGame.roomUsers[attackedBoardIndex].killedShips?.pop();
+    if (currentGame) {
+      const whoseTurnIndex = currentGame.whoseTurnIndex;
+      if (whoseTurnIndex === indexPlayer) {
+        const status = this.detectMissOrKill(currentGame, attackedBoardIndex, indexPlayer, coordinates);
+        const turn = this.generateTurn(currentGame, indexPlayer, status);
+        const killedShip = currentGame.roomUsers[attackedBoardIndex].killedShips?.pop();
 
-      currentGame.roomUsers.forEach((player) => {
-        const playerWs = userList[player.index - 1].ws;
+        currentGame.roomUsers.forEach((player) => {
+          const playerWs = userList[player.index - 1].ws;
 
-        if (playerWs) {
-          if (status === 'double-shot') {
-            return;
-          }
-          this.sendAttackResponse(playerWs, coordinates, indexPlayer, status);
-          if (status === 'killed' && killedShip) {
-            this.sendKillShipResponse(playerWs, killedShip, indexPlayer);
-            this.sendSurroundingCellsResponse(playerWs, killedShip, indexPlayer);
-
-            const isGameFinished = currentGame.roomUsers[indexPlayer].isWinner;
-            if (isGameFinished) {
-              this.sendFinishResponse(playerWs, indexPlayer);
-              new RegController().sendUpdateWinnersResponse(playerWs, winnersList);
+          if (playerWs) {
+            if (status === 'double-shot') {
+              return;
             }
+            this.sendAttackResponse(playerWs, coordinates, indexPlayer, status);
+            if (status === 'killed' && killedShip) {
+              this.sendKillShipResponse(playerWs, killedShip, indexPlayer);
+              this.sendSurroundingCellsResponse(playerWs, killedShip, indexPlayer);
+
+              const isGameFinished = currentGame.roomUsers[indexPlayer].isWinner;
+              if (isGameFinished) {
+                this.sendFinishResponse(playerWs, indexPlayer);
+                new RegController().sendUpdateWinnersToAll();
+              }
+            }
+            this.sendTurnResponse(playerWs, turn);
           }
-          this.sendTurnResponse(playerWs, turn);
-        }
-      });
+        });
+      }
     }
   }
 

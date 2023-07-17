@@ -10,27 +10,30 @@ class ShipsController {
     const { gameId, ships, indexPlayer } = command.data;
     const userShipsCoordinatesList = ships.map((ship) => this.convertShipToCoordinates(ship));
     const shipsAmount = userShipsCoordinatesList.length;
-    const currentGame = gamesList[gameId];
-    const currentPlayer = currentGame.roomUsers.find((user) => user.ws === ws);
+    const currentGame = gamesList.find((game) => game.gameId === gameId);
 
-    if (currentPlayer) {
-      currentPlayer.indexPlayer = indexPlayer;
-      currentPlayer.shipsList = ships;
-      currentPlayer.shipsCoords = userShipsCoordinatesList;
-      currentPlayer.woundedCoords = Array.from({ length: shipsAmount }, () => []);
-      currentPlayer.killedShips = [];
-    }
+    if (currentGame) {
+      const currentPlayer = currentGame.roomUsers.find((user) => user.ws === ws);
 
-    if (this.areBothPlayersReady(currentGame)) {
-      const turn = new GameController().generateTurn(currentGame, 0, 'start');
+      if (currentPlayer) {
+        currentPlayer.indexPlayer = indexPlayer;
+        currentPlayer.shipsList = ships;
+        currentPlayer.shipsCoords = userShipsCoordinatesList;
+        currentPlayer.woundedCoords = Array.from({ length: shipsAmount }, () => []);
+        currentPlayer.killedShips = [];
+      }
 
-      currentGame.roomUsers.forEach((player, index) => {
-        const playerWs = userList[player.index - 1].ws;
-        if (playerWs) {
-          this.sendCreateGameResponse(playerWs, currentGame, index);
-          new GameController().sendTurnResponse(playerWs, turn);
-        }
-      });
+      if (this.areBothPlayersReady(currentGame)) {
+        const turn = new GameController().generateTurn(currentGame, 0, 'start');
+
+        currentGame.roomUsers.forEach((player, index) => {
+          const playerWs = userList[player.index - 1].ws;
+          if (playerWs) {
+            this.sendCreateGameResponse(playerWs, currentGame, index);
+            new GameController().sendTurnResponse(playerWs, turn);
+          }
+        });
+      }
     }
   }
 
