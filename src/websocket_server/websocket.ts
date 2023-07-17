@@ -1,5 +1,5 @@
 import { IncomingMessage } from 'http';
-import WebSocket, { WebSocketServer } from 'ws';
+import WebSocket, { AddressInfo, WebSocketServer } from 'ws';
 import { router } from '../router/router.js';
 import { parseCommand } from '../utils/commandsHandler.js';
 import { userList } from '../data/users-data.js';
@@ -12,11 +12,21 @@ export const wsServer: WebSocket.Server<typeof WebSocket, typeof IncomingMessage
   port: WS_PORT,
 });
 
+export function onListen(): void {
+  const wsAddress = wsServer.address();
+  if (typeof wsAddress !== 'string') {
+    console.log(`WebSocket server works on ${wsAddress.port} port. Address is ${wsAddress.address}\n`);
+  } else {
+    console.log(`WebSocket server works on ${WS_PORT} port\n`);
+  }
+}
+
 export function onConnect(ws: WebSocket, req: IncomingMessage): void {
   ws.on('error', console.error);
 
-  console.log(`WebSocket server works on ${WS_PORT} port`);
-  console.log(`Remote Address is ${req.socket.remoteAddress}. Remote Port is ${req.socket.remotePort}\n`);
+  console.log(
+    `Client connected. Remote Address is ${req.socket.remoteAddress}. Remote Port is ${req.socket.remotePort}\n`,
+  );
 
   ws.on('message', function message(command) {
     const parsedCommand = parseCommand(command);
