@@ -1,5 +1,5 @@
 import { IncomingMessage } from 'http';
-import WebSocket, { AddressInfo, WebSocketServer } from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 import { router } from '../router/router.js';
 import { parseCommand } from '../utils/commandsHandler.js';
 import { userList } from '../data/users-data.js';
@@ -29,7 +29,6 @@ export function onConnect(ws: WebSocket, req: IncomingMessage): void {
   );
 
   ws.on('message', function message(command) {
-    // console.log(`Command0: ${command}`);
     const parsedCommand = parseCommand(command);
     console.log(`COMMAND: ${JSON.stringify(parsedCommand)}`);
     router(ws, parsedCommand);
