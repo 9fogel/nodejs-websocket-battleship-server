@@ -45,6 +45,7 @@ class GameController {
               const isGameFinished = currentGame.roomUsers[indexPlayer].isWinner;
               if (isGameFinished) {
                 this.sendFinishResponse(playerWs, indexPlayer);
+                this.removeFinishedGame(currentGame);
                 new RegController().sendUpdateWinnersToAll();
               }
             }
@@ -81,6 +82,7 @@ class GameController {
           console.log('Game finished with technical defeat');
           this.addWinner(winnerUser);
           this.sendFinishResponse(playerWs, winnerPlayerIndex);
+          this.removeFinishedGame(foundGame);
           new RegController().sendUpdateWinnersToAll();
         }
       }
@@ -295,6 +297,13 @@ class GameController {
         const winnerUser = currentGame.roomUsers[indexPlayer];
         this.addWinner(winnerUser);
       }
+    }
+  }
+
+  private removeFinishedGame(currentGame: IGame): void {
+    const currentGameIndex = gamesList.indexOf(currentGame);
+    if (currentGameIndex !== -1) {
+      gamesList.splice(currentGameIndex, 1);
     }
   }
 
