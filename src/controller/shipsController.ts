@@ -33,6 +33,10 @@ class ShipsController {
             new GameController().sendTurnResponse(playerWs, turn);
           }
         });
+
+        console.log(`RESULT: Both players have ships. Game is started, turn order will be send by the server\n`);
+      } else {
+        console.log(`RESULT: One player has ships. Waiting for another player\n`);
       }
     }
   }

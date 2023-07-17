@@ -26,10 +26,14 @@ class RegController {
     if (isNewUser(userData.name)) {
       userList.push({ ...userData, ws });
       websocketsList.add(ws);
-      console.log(`User ${userData.name} added to DB\n`);
+      console.log(`RESULT: User ${userData.name} added to DB\n`);
     } else {
-      this.updateExistingUser(ws, userData);
-      console.log(`User ${userData.name} logged in again\n`);
+      if (isPasswordValid(userData)) {
+        this.updateExistingUser(ws, userData);
+        console.log(`RESULT: User ${userData.name} logged in again\n`);
+      } else {
+        console.log(`RESULT: User ${userData.name} entered incorrect password\n`);
+      }
     }
   }
 

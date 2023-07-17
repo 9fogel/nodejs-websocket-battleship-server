@@ -36,9 +36,15 @@ class RoomController {
         gamesList.push(game);
         gameStats.count += 1;
 
+        console.log(`RESULT: User ${user.name} was added to the room. Game was created\n`);
+
         this.deleteRoomsCreatedByUser(user);
         this.sendUpdateRoomStateToAll();
       }
+    } else {
+      console.log(
+        `RESULT: This user is already in the room as he/she is a room creator. Game will be created when second user will join this room\n`,
+      );
     }
   }
 
@@ -47,7 +53,7 @@ class RoomController {
     if (user && this.isFirstUserRoom(user)) {
       const firstPlayer = {
         ws: user.ws,
-        name: user?.name,
+        name: user.name,
         index: userList.indexOf(user) + 1,
       };
       const newRoom = {
@@ -56,7 +62,11 @@ class RoomController {
       };
       playRooms.push(newRoom);
 
+      console.log(`RESULT: New room was created by ${user.name}\n`);
+
       this.sendUpdateRoomStateToAll();
+    } else {
+      console.log('RESULT: This user already has another room. Only one room per user is allowed\n');
     }
   }
 

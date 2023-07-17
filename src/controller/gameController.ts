@@ -220,7 +220,10 @@ class GameController {
           const killedShip = woundedCoords[shipIndex];
           currentGame.roomUsers[attackedBoardIndex].killedShips?.push(killedShip);
 
+          console.log(`RESULT: Ship was killed\n`);
           this.handleWinners(currentGame, attackedBoardIndex, indexPlayer);
+        } else {
+          console.log(`RESULT: Ship was shot\n`);
         }
       } else {
         if (woundedCoords) {
@@ -230,11 +233,13 @@ class GameController {
             );
             if (doubleShotCoords) {
               status = 'double-shot';
+              console.log(`RESULT: This is double-shot, try again\n`);
               break;
             } else {
               status = 'miss';
             }
           }
+          console.log(`RESULT: This cell is empty\n`);
         }
       }
     }
@@ -296,6 +301,7 @@ class GameController {
       if (isWinner) {
         const winnerUser = currentGame.roomUsers[indexPlayer];
         this.addWinner(winnerUser);
+        console.log(`All opponent's ships were killed. User ${winnerUser.name} is a winner!`);
       }
     }
   }
